@@ -378,9 +378,23 @@ void Tasks::MoveTask(void *arg) {
             cout << " move: " << cpMove;
             
             rt_mutex_acquire(&mutex_robot, TM_INFINITE);
-            robot.Write(new Message((MessageID)cpMove));
+            //robot.Write(new Message((MessageID)cpMove));
+            Message * msgSend = robot.Write(new Message((MessageID)cpMove));
             rt_mutex_release(&mutex_robot);
         }
+        
+        // EXCIGEANCE 9 :
+        
+        if (msgSend->GetID() != MESSAGE_ANSWER_ACK){
+            rt_mutex_acquire(&mutex_robotStarted, TM_INFINITE);
+            robotStarted = 0;
+            rt_mutex_release(&mutex_robotStarted);
+            
+            cout << "Loss of communication between robot and supervisor!" << endl;
+            
+            robot.Close();
+        }
+        
         cout << endl << flush;
     }
 }
