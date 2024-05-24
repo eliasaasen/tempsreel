@@ -347,6 +347,37 @@ void Tasks::StartRobotTask(void *arg) {
         }
     }
 }
+void Tasks::PeriodicCheckBattery(void *arg) {
+
+    cout << "Start " << __PRETTY_FUNCTION__ << endl << flush;
+
+    Message * msg;
+    
+    bool active;
+
+    rt_sem_p(&sem_barrier, TM_INFINITE);
+    rt_task_set_periodic(NULL, TM_NOW, 500 * 1000 * 1000);
+
+    while (1) {
+        rt_task_wait_period(NULL);
+        rt_mutex_acquire(&mutex_robotStarted, TM_INFINITE);
+        active = robotStarted;
+        rt_mutex_release(&mutex_robotStarted);
+
+        if (active) {
+            rt_mutex_acquire(&mutex_robot, TM_INFINITE);
+            msg = robot.Write(robot.GetBattery());
+            rt_mutex_release(&mutex_robot);
+
+            rt_mutex_acquire(&mutex_monitor, TM_INFINITE);
+            monitor.Write(msg);
+            rt_mutex_release(&mutex_monitor);
+
+        }
+
+    }
+
+}
 
 /**
  * @brief Thread handling control of the robot.
