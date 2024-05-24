@@ -132,6 +132,11 @@ private:
      */
     void MoveTask(void *arg);
     
+    void PeriodicImageCamera(void *arg);
+    
+    //Excigeance 13 :
+    void PeriodicCheckBattery(void *arg);
+    
     /**********************************************************************/
     /* Queue services                                                     */
     /**********************************************************************/

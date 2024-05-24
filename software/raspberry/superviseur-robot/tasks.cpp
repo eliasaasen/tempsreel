@@ -430,6 +430,35 @@ void Tasks::MoveTask(void *arg) {
     }
 }
 
+//EXCIGEANCE 14:
+
+void Tasks::PeriodicImageCamera(void *arg) {
+
+    cout << "Start " << __PRETTY_FUNCTION__ << endl << flush;
+
+    Message * msg;
+
+    rt_sem_p(&sem_barrier, TM_INFINITE);
+    rt_task_set_periodic(NULL, TM_NOW, 100 * 1000 * 1000);
+
+    while (1) {
+        rt_task_wait_period(NULL);
+
+        if (camera.IsOpen() && isImageFluxActive) {
+            Img * img = new Img(camera.Grab());
+            if (existArena) {
+                img->DrawArena(Arene);
+            }
+            MessageImg * msgImg = new MessageImg(MESSAGE_CAM_IMAGE, img);
+            rt_mutex_acquire(&mutex_monitor, TM_INFINITE);
+            monitor.Write(msgImg);
+            rt_mutex_release(&mutex_monitor);
+        }
+
+    }
+
+}
+
 /**
  * Write a message in a given queue
  * @param queue Queue identifier
